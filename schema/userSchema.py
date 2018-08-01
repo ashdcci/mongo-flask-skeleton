@@ -1,6 +1,7 @@
 from flask_mongoengine import MongoEngine
 # from ..config.db import db
 db = MongoEngine()
+print(db)
 import datetime
 
 class User(db.Document):

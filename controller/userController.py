@@ -6,6 +6,7 @@ import pycurl
 from io import StringIO
 import blockcypher
 import requests,json
+from bson import json_util, ObjectId
 user_model = UserModel()
 
 class userController:
@@ -19,7 +20,9 @@ class userController:
         self.curl = pycurl.Curl()
     
     def getUsers(self):
-        return user_model.get_user()
+        res = user_model.get_user()
+        data = json.loads(json_util.dumps(res))
+        return jsonify({'status':1, 'data':data})
 
     def updateFaucet(self,data):
         if not data.get('email'):
