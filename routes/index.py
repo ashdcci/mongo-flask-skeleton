@@ -8,7 +8,9 @@ from flask import Flask, request, render_template,  abort, redirect, url_for, se
 
 ### Controller Class Calling
 from ..controller.userController import userController
+from ..controller.chatController import chatController
 userController = userController()
+chatController = chatController()
 
 class Routeclass(object):
     routes = Blueprint('api', __name__)
@@ -37,3 +39,7 @@ class Routeclass(object):
     @routes.route('/send-transaction',methods=['POST'])
     def send_transaction():
         return userController.send_transaction()
+
+    @routes.route('/send-message',methods=['POST'])
+    def send_message():
+        return chatController.sendShhMessage()
