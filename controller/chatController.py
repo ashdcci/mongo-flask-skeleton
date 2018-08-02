@@ -22,22 +22,11 @@ class chatController:
         self.defaultTopic = "0x5a4ea131"
         self.privateKey = '0x862e3b865d47553509e7e97229a6e868c6656dd654799dd411ffbdcf8f2fa800'
         self.defaultRecipientPubKey = ''
-        # self.data1 = L(
-		# 	'msgs': '',
-		# 	'text': "",
-		# 	'symKeyId': '',
-		# 	'name': "",
-		# 	'asymKeyId': '',
-		# 	'sympw': "",
-		# 	'asym': True,
-		# 	'configured': False,
-		# 	'topic': self.defaultTopic,
-		# 	'recipientPubKey': self.defaultRecipientPubKey,
-		# 	'asymPubKey': ""
-        # )
-        # self.data ={}
-
-
+        self.defaultPwd = 'core2duo'
+        self.kid = ''
+        self.defaultkId = '8158692724d0353cdf336f843ebea2de6932d811e2e6b06cb5c18bec67d37866'
+        self.payloadMsg = ''
+        
         self.data = {
             'msgs': '',
 			'text': "",
@@ -51,35 +40,63 @@ class chatController:
 			'recipientPubKey': self.defaultRecipientPubKey,
 			'asymPubKey': ""
         }
-        # a = MyDict()
-        # a.test = 'hello'
-        # print('a',a)
+        self.data['symKeyId'] = self.shh.generateSymKeyFromPassword(self.defaultPwd)
         print('data: ',self.data)
-        self.data['asymKeyId'] = '9acd5567090cfd678e2374b84374715d250bf3f867e8ac21952eba279e10b97c'
-        self.data['asymPubKey'] = '0x0481cb49387b170626a4edc7642b213473a86cadf0ec781582013b6198c86ebe8c01c52f2a0c22b33ab17f1facaa1f58c7cd889b1d60e3963a2fb40459bf43beae'
-        # setattr((self.data, 'asymKeyId', '9acd5567090cfd678e2374b84374715d250bf3f867e8ac21952eba279e10b97c')
-        # setattr(self.data, 'asymPubKey', '0x0481cb49387b170626a4edc7642b213473a86cadf0ec781582013b6198c86ebe8c01c52f2a0c22b33ab17f1facaa1f58c7cd889b1d60e3963a2fb40459bf43beae')
-        
         self.getFilterMessage()
-        # threading.Timer(1.0, self.getFilterMessage).start()
-        # while True:
-        #     t.cancel()
-        #     t.start()
-        # self.defaultRecipientPubKey = self.shh.getPublicKey(self.data['asymKeyId'])
         
         
-    @setInterval(1, 3)
+        
     def getFilterMessage(self):
-        filterCriteria = {'topic':self.defaultTopic,'privateKeyID': self.data['asymKeyId']} 
+         #self.shh.newKeyPair()
+        res = self.shh.hasKeyPair(self.defaultkId)
+        if not (res):
+            self.kId=self.shh.addPrivateKey(self.privateKey)
+            print('self new kid: ',self.kId)
+
+        self.privateKey = self.shh.getPrivateKey(self.kId)
+        self.defaultRecipientPubKey = self.shh.getPublicKey(self.kId)
+        self.data['asymKeyId'] = self.privateKey
+
+        print(res)
+        print('kid: ',self.kId)
+        print('gprk: ',self.privateKey)
+        print('gpubk: ',self.defaultRecipientPubKey)
+        filterCriteria = {'topic':self.defaultTopic,'symKeyId': self.data['symKeyId']} 
         print(filterCriteria)
-
-
+        self.payloadMsg = self.shh.newMessageFilter(filterCriteria)
+        # print('msgs: ',payloadMsg)
+        # resMessage = self.shh.getMessages(payloadMsg.filter_id)
+        # print(resMessage)
         return
 
     def sendShhMessage(self):
-        
-        # res = self.shh.post({'payload': self.w3.toHex(text="test_payload"), 'pubKey': self.defaultRecipientPubKey, 'topic': '0x12340000', 'powTarget': 2.5, 'powTime': 2})        
-        return jsonify({'status':1,'msg':'message sent','data':0})
+        data = request.form
+        message = data.get('message')
+        res = self.shh.post({
+                'payload': self.w3.toHex(text=message),
+                'symKeyId': self.data['symKeyId'], 
+                'topic': self.defaultTopic,
+                'powTarget': 2.5,
+                'powTime': 2
+                })
+        print('message sent:',res)
+        # self.getFilterMessage()
+        resMessage = self.shh.getMessages(self.payloadMsg.filter_id)
+        mes_pars = ''
+        if resMessage != []:
+            message = resMessage[0]
+            mes_pars = message['payload']
+            # mes_from = message['recipientPublicKey']
+            topic = message['topic']
+            # timestamp = message['timestamp']
+            # print('from user => {}'.format(Web3.toHex(mes_from)))
+            print('message => {}'.format(Web3.toText(mes_pars)))
+            # print('topic => {}'.format(Web3.toText(topic)))
+            # print('timestamp => {}'.format(timestamp))        
+
+        print(resMessage)
+        # print('message: ',self.w3.toText(resMessage['payload']))
+        return jsonify({'status':1,'msg':'message sent','message':Web3.toText(mes_pars)})
 
 
 class MyDict(object):
