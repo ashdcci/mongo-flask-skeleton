@@ -6,6 +6,8 @@ import sys
 sys.path.append("..")
 from flask import Flask, request, render_template,  abort, redirect, url_for, session, escape, Blueprint, jsonify
 
+# print(global.socketio)
+# socketio = getattr(g,'socketio',None)
 ### Controller Class Calling
 from ..controller.userController import userController
 from ..controller.chatController import chatController
@@ -14,10 +16,9 @@ chatController = chatController()
 
 class Routeclass(object):
     routes = Blueprint('api', __name__)
-
     @routes.route('/')
     def api():
-        return jsonify({'status':1,'msg':'api callback!!'})
+        return render_template('index.html')
 
     @routes.route('/get-users')
     def get_users1():
@@ -43,3 +44,4 @@ class Routeclass(object):
     @routes.route('/send-message',methods=['POST'])
     def send_message():
         return chatController.sendShhMessage()
+  
