@@ -1,5 +1,5 @@
 web3==4.4.1
-numpy==1.11.3
+numpy==1.22.2
 Flask-DotEnv==0.1.1
 Flask==0.12.2
 flask-mongoengine==0.9.5      
